@@ -1,0 +1,8 @@
+cpu 个数 : 2
+cpu 核数 : 1
+cpu 主频 : 2.39GHz
+cpu 名称 : Intel(R) Xeon(R) CPU E5-2680 v4 @ 2.40GHz
+内存大小 : 4.03GB
+硬盘大小 : 39GB
+cpu使用率 : 0%
+内存使用率 : 0.1%

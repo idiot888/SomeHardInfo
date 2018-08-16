@@ -1,0 +1,174 @@
+#include <stdio.h>
+#include <string>
+#include <iostream>
+#include <fstream>
+#include <stdlib.h>
+#include <vector>
+#include <math.h>
+#include <sys/statfs.h>
+#include <sys/vfs.h>
+#include <errno.h>
+bool splitString(const std::string& inputStr,std::vector<std::string>& result,const std::string& splitSymbol)
+{ 
+  
+  using namespace std;
+  bool ret;
+
+  string::size_type pos1, pos2;
+  pos2 = inputStr.find(splitSymbol);
+  pos1 = 0;
+  while(string::npos != pos2)
+  {
+     result.push_back(inputStr.substr(pos1, pos2-pos1));
+     pos1 = pos2 + splitSymbol.size();
+     pos2 = inputStr.find(splitSymbol, pos1);
+  }
+  if(pos1 != inputStr.length())
+    result.push_back(inputStr.substr(pos1));
+
+  return ret;
+}
+bool trimString(std::string & str)
+{       
+	using namespace std;
+	bool ret;
+	int pos1,pos2;
+	int pos;
+	if( !str.empty() )
+        {
+	    str.erase(0,str.find_first_not_of(" "));
+	    pos1 = str.find_last_not_of(" ");
+	    pos2 = str.find_last_not_of("	");
+            pos = (pos1 < pos2)?pos1:pos2;
+	    str.erase(pos + 1);
+	}
+	return ret;
+}
+struct NCpuInfo
+{
+   std::string realCount;
+   std::string coreCount;
+   std::string frequency;
+   std::string name;
+};
+
+struct NMemInfo
+{
+	std::string totalSize;
+};
+
+struct NDiskInfo
+{
+	int totalSize;
+};
+
+int getCpuInfo(NCpuInfo & info)
+{       
+        using namespace std;
+	string fileName = "/proc/cpuinfo";
+	string lineContent;
+	ifstream input(fileName.c_str());
+	int coreArray[32]={0};
+	//cout<<t<<"###"<<endl;
+	while(getline(input,lineContent))
+	{
+                vector<string> v;
+		splitString(lineContent,v,string(":"));
+		if(v.size() != 2)
+		{
+			continue;
+		}
+                string item = v[0];
+	        trimString(item);
+		string value = v[1];
+	        trimString(value);
+                if(item == "cpu MHz")
+		{
+			info.frequency = value;
+		}
+		else if(item == "model name")
+		{
+			info.name = value;
+		}
+		else if(item == "cpu cores")
+		{
+                        info.coreCount = value;
+		}
+		else if(item == "physical id")
+		{
+			int index = atoi(value.c_str());
+			coreArray[index]++;
+		}
+	}
+	int realCount = 0;
+	for(int i=0;i<32;i++)
+	{
+                if(coreArray[i]>0){realCount++;}
+	}
+        char strCount[8]={0};
+        sprintf(strCount,"%d",realCount);
+	info.realCount = string(strCount);
+	return 0;
+}
+int getMemInfo(NMemInfo & info)
+{
+        using namespace std;
+	string fileName = "/proc/meminfo";
+	string lineContent;
+	ifstream input(fileName.c_str());
+	while(getline(input,lineContent))
+	{
+                vector<string> v;
+		splitString(lineContent,v,string(":"));
+                string item = v[0];
+		trimString(item);
+		if( item ==  "MemTotal")
+		{
+                	string value = v[1];
+			trimString(value);
+                        value.erase(value.size()-2);
+                        info.totalSize = value;
+		}
+	}
+	return 0;
+
+}
+int getDiskInfo(NDiskInfo & info)
+{
+	struct statfs disk_info;
+	char path[] = "/";
+	int ret = 0;
+	if( ret == statfs(path,&disk_info) == -1)
+	{
+		printf("1111111111111\n");
+		return -1;
+	}
+	long long total_size = disk_info.f_blocks * disk_info.f_bsize;
+	long long available_size = disk_info.f_bavail * disk_info.f_bsize;
+	long long free_size = disk_info.f_bfree * disk_info.f_bsize;
+	//printf("total file disk size: %ld MB\n",total_size >> 20);
+	//printf("total file disk size: %lld MB\n",total_size >> 30);
+	info.totalSize = total_size >> 30;
+	 
+}
+int main()
+{
+	using namespace std;
+	int ret = 0;
+	NCpuInfo info;
+	NMemInfo info2;
+	NDiskInfo info3;
+        getCpuInfo(info);
+	getMemInfo(info2);
+	getDiskInfo(info3);
+        /*
+	double dValue = atof(value.c_str());
+	dValue = dValue/(1024 * 1024);
+	dValue = round(dValue *100)/100;
+        */
+        cout<<"@@@@@@@@@@@@@@ "<<endl;
+        cout<< info.realCount<<"  "<<info.coreCount << " "<<info.frequency<<" "<<info.name <<endl;
+	cout<< info2.totalSize<<endl;
+	cout<< info3.totalSize<<endl;
+	return ret;
+}

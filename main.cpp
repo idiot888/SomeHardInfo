@@ -13,7 +13,11 @@
 #include <sys/time.h>
 #include <unistd.h>
 
+
+
 #define FLOAT_ZERO 0.000001
+
+std::string g_saveFileName;
 
 bool splitString(const std::string& inputStr,std::vector<std::string>& result,const std::string& splitSymbol)
 { 
@@ -227,7 +231,7 @@ int getMemoryUsage(double& memoryUsage )
 
 void realFunc(int pramter)
 {
-	printf("call realFunc \n");
+	//printf("call realFunc \n");
 	using namespace std;
 	int ret = 0;
 	NCpuInfo info;
@@ -253,6 +257,7 @@ void realFunc(int pramter)
 
 	getMemoryUsage(memoryUseage);
 
+        /*
         fstream out("info.txt",ios::out | ios::trunc);
         out<<"cpu 个数 : "<<info.realCount<<endl;
         out<<"cpu 核数 : "<<info.coreCount<<endl;
@@ -264,6 +269,17 @@ void realFunc(int pramter)
 	out<<"内存使用率 : "<<memoryUseage<<"%"<<endl;
          
 	out.close();
+	*/
+        fstream out(g_saveFileName.c_str(),ios::out | ios::trunc);
+        out<<info.realCount<<endl;
+        out<<info.coreCount<<endl;
+        out<<dfrequency <<"GHz"<<endl;
+        out<<dvalue<<"GB"<<endl;
+	out<<info3.totalSize<<"GB"<<endl;
+	out<<cpuUsageReal<<"%"<<endl;
+	out<<memoryUseage<<"%"<<endl;
+	out.close();
+
 	/*
         cout<<"cpu 个数 : "<<info.realCount<<endl;
         cout<<"cpu 核数 : "<<info.coreCount<<endl;
@@ -274,10 +290,19 @@ void realFunc(int pramter)
 	cout<<"cpu使用率 : "<<cpuUsageReal<<"%"<<endl;
 	cout<<"内存使用率 : "<<memoryUseage<<"%"<<endl;
 	*/
+        /*
+        cout<<info.realCount<<endl;
+        cout<<info.coreCount<<endl;
+        cout<<dfrequency <<"GHz"<<endl;
+        cout<<dvalue<<"GB"<<endl;
+	cout<<info3.totalSize<<"GB"<<endl;
+	cout<<cpuUsageReal<<"%"<<endl;
+	cout<<memoryUseage<<"%"<<endl;
+	*/
 	//return ret;
 
 }
-int main()
+int main(int argc,char* argv[])
 {       
 	/*
 	using namespace std;
@@ -326,6 +351,14 @@ int main()
 	cout<<"cpu使用率 : "<<cpuUsageReal<<"%"<<endl;
 	cout<<"内存使用率 : "<<memoryUseage<<"%"<<endl;
 	*/
+        if(argc >= 2)
+	{
+		g_saveFileName = argv[1];
+	}
+	else
+	{
+		g_saveFileName = "info.txt";
+	}
 
 	int ret;
 	signal(SIGALRM,realFunc);

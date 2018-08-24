@@ -66,6 +66,7 @@ struct NCpuInfo
 struct NMemInfo
 {
 	std::string totalSize;
+	double usage;
 };
 
 struct NDiskInfo
@@ -108,6 +109,8 @@ int getCpuInfo(NCpuInfo & info)
 		else if(item == "physical id")
 		{
 			int index = atoi(value.c_str());
+
+
 			coreArray[index]++;
 		}
 	}
@@ -127,6 +130,9 @@ int getMemInfo(NMemInfo & info)
 	string fileName = "/proc/meminfo";
 	string lineContent;
 	ifstream input(fileName.c_str());
+	string memFree;
+	string memBuffer;
+	string memCached;
 	while(getline(input,lineContent))
 	{
                 vector<string> v;
@@ -140,7 +146,45 @@ int getMemInfo(NMemInfo & info)
                         value.erase(value.size()-2);
                         info.totalSize = value;
 		}
+		else if( item == "MemFree")
+		{       
+			memFree = v[1];
+                        string & value = memFree;
+			trimString(value);
+                        value.erase(value.size()-2);
+
+
+		}
+		else if( item == "Buffers")
+		{       
+ 	                memBuffer = v[1];
+                        string & value = memBuffer;
+			trimString(value);
+                        value.erase(value.size()-2);
+
+		}
+		else if( item == "Cached")
+		{
+                        memCached = v[1];
+                        string & value = memCached;
+			trimString(value);
+                        value.erase(value.size()-2);
+
+		}
+		else
+		{
+			break;
+		}
 	}
+	long total = atol(info.totalSize.c_str());
+        long free =  atol(memFree.c_str());
+	long buffer = atol(memBuffer.c_str());
+	long cached = atol(memCached.c_str());
+	double usagePercent =1- ((double)(free+buffer+cached)/total);
+	usagePercent = usagePercent * 100;
+	usagePercent = round(usagePercent *100)/100;
+        info.usage = usagePercent;
+	
 	return 0;
 
 }
@@ -255,7 +299,7 @@ void realFunc(int pramter)
         double cpuUsageReal = cpuUsage/(realCount * coreCount);
         double memoryUseage;
 
-	getMemoryUsage(memoryUseage);
+	//getMemoryUsage(memoryUseage);
 
         /*
         fstream out("info.txt",ios::out | ios::trunc);
@@ -277,7 +321,7 @@ void realFunc(int pramter)
         out<<dvalue<<"GB"<<endl;
 	out<<info3.totalSize<<"GB"<<endl;
 	out<<cpuUsageReal<<"%"<<endl;
-	out<<memoryUseage<<"%"<<endl;
+	out<<info2.usage<<"%"<<endl;
 	out.close();
 
 	/*

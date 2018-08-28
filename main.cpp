@@ -206,7 +206,7 @@ int getCpuUsage(double& cpuUsage )
 {
    FILE *fstream = NULL;
    char buff[1024]={0};
-   char command[]="top -n1 | awk -v n=9 'NR>7{print $(n+1)}'";
+   char command[]="top -b -n1 | awk -v n=9 'NR>7{print $(n+1)}'";
    if(NULL == (fstream = popen(command,"r")))      
    {     
            //fprintf(stderr,"execute command failed: %s",strerror(errno));
@@ -242,7 +242,7 @@ int getMemoryUsage(double& memoryUsage )
 {
    FILE *fstream = NULL;
    char buff[1024]={0};
-   char command[]="top -n1 | awk -v n=10 'NR>7{print $(n+1)}'";
+   char command[]="top -b -n1 | awk -v n=10 'NR>7{print $(n+1)}'";
    if(NULL == (fstream = popen(command,"r")))      
    {     
            //fprintf(stderr,"execute command failed: %s",strerror(errno));
